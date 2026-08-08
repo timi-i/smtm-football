@@ -14,7 +14,7 @@ if [ ! -f intel-service/.env ]; then
   echo "已创建 intel-service/.env,请填入 LLM_API_KEY 等配置"
 fi
 
-echo "==> 构建镜像 (BUILD_VERSION=$BUILD_VERSION)"
+echo "==> 构建镜像 (BUILD_VERSION=${BUILD_VERSION:-local})"
 docker compose build --progress=plain 2>&1 | tail -30
 
 echo "==> 启动服务"
