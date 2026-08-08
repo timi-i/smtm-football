@@ -1,0 +1,13 @@
+{
+  "name": "daily-football-predictor",
+  "version": "2.8.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "update": "node scripts/update.mjs",
+    "check:freshness": "node scripts/check-freshness.mjs",
+    "test": "node --test scripts/test.mjs",
+    "serve": "node scripts/serve.mjs"
+  },
+  "engines": { "node": ">=20" }
+}

@@ -1,0 +1,96 @@
+name: Update football predictions
+
+on:
+  schedule:
+    - cron: "*/30 * * * *"
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - ".github/workflows/update-predictions.yml"
+
+permissions:
+  contents: write
+
+concurrency:
+  group: football-prediction-update
+  cancel-in-progress: false
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v5
+        with:
+          node-version: 24
+
+      - name: Test before update
+        run: npm test
+
+      - name: Sync schedule, results and match context
+        shell: bash
+        run: |
+          set +e
+          npm run update 2>&1 | tee update.log
+          update_status=${PIPESTATUS[0]}
+          if [ "$update_status" -ne 0 ]; then
+            {
+              echo "## Update command output"
+              echo '```text'
+              tail -n 80 update.log
+              echo '```'
+            } >> "$GITHUB_STEP_SUMMARY"
+            node -e "const fs=require('fs'); const s=fs.readFileSync('update.log','utf8').slice(-4000).replace(/%/g,'%25').replace(/\\r/g,'%0D').replace(/\\n/g,'%0A'); console.log('::error title=Update command failed::'+s)"
+          fi
+          exit "$update_status"
+
+      - name: Test generated data
+        run: npm test
+
+      - name: Verify fresh snapshot
+        run: npm run check:freshness
+        env:
+          MAX_DATA_AGE_MINUTES: "90"
+
+      - name: Commit and push data only
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add data/history.json data/model-state.json data/predictions.json
+          if git diff --cached --quiet; then
+            echo "No prediction data changed."
+            exit 0
+          fi
+          git commit -m "Update daily football predictions"
+          for attempt in 1 2 3; do
+            if git push origin HEAD:main; then
+              exit 0
+            fi
+            if [ "$attempt" -lt 3 ]; then
+              git pull --rebase origin main
+            fi
+          done
+          echo "Failed to push prediction data after 3 attempts." >&2
+          exit 1
+
+      - name: Write success summary
+        if: success()
+        shell: bash
+        run: |
+          node -e "const d=require('./data/predictions.json'); console.log('generatedAt='+d.generatedAt); console.log('matches='+d.matches.length); console.log('model='+d.model.version)" >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Write failure summary
+        if: failure()
+        shell: bash
+        run: |
+          echo "## Football prediction update failed" >> "$GITHUB_STEP_SUMMARY"
+          echo "The existing published snapshot was preserved. Check the failed step for data-source, test or push errors." >> "$GITHUB_STEP_SUMMARY"

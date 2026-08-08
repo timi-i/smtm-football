@@ -1,0 +1,17 @@
+# 日志
+logs/
+*.log
+
+# 环境变量
+intel-service/.env
+
+# Python
+intel-service/.venv/
+intel-service/__pycache__/
+intel-service/intel/__pycache__/
+intel-service/intel/sources/__pycache__/
+*.py[cod]
+
+# 系统
+.DS_Store
+Thumbs.db
