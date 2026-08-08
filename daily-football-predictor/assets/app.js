@@ -87,6 +87,19 @@ function renderMatches(matches) {
     node.querySelector(".home").textContent = match.home;
     node.querySelector(".away").textContent = match.away;
     node.querySelector(".expected-goals").textContent = `xG ${match.prediction.expectedGoals.home.toFixed(2)} : ${match.prediction.expectedGoals.away.toFixed(2)}`;
+    // 赔率显示
+    const odds = match.odds || {};
+    const resultOdd = odds.result || {};
+    const handicapOdd = odds.handicapResult || {};
+    let oddsHtml = '<div class="odds-display">';
+    if (resultOdd.home) {
+      oddsHtml += `<div class="odds-row"><span class="odds-label">胜平负</span><span class="odd-item win">${resultOdd.home.toFixed(2)}</span><span class="odd-item draw">${resultOdd.draw?.toFixed(2) || '-'}</span><span class="odd-item lose">${resultOdd.away?.toFixed(2)}</span></div>`;
+    }
+    if (handicapOdd.home) {
+      oddsHtml += `<div class="odds-row"><span class="odds-label">让球(${match.handicap > 0 ? '+' : ''}${match.handicap})</span><span class="odd-item win">${handicapOdd.home.toFixed(2)}</span><span class="odd-item draw">${handicapOdd.draw?.toFixed(2) || '-'}</span><span class="odd-item lose">${handicapOdd.away?.toFixed(2)}</span></div>`;
+    }
+    oddsHtml += '</div>';
+    node.querySelector(".expected-goals").insertAdjacentHTML('afterend', oddsHtml);
     Object.entries(METRIC_LABELS).forEach(([key]) => {
       node.querySelector(`[data-pred="${key}"]`).textContent = match.prediction[key];
       const probability = percent(match.prediction.probabilities[key]);
