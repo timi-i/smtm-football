@@ -3,7 +3,8 @@
 set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-LOG_DIR="$SCRIPT_DIR/../logs"
+PROJECT_DIR="$(dirname "$SCRIPT_DIR")"
+LOG_DIR="$PROJECT_DIR/logs"
 LOG_FILE="$LOG_DIR/serve.log"
 
 mkdir -p "$LOG_DIR"
@@ -15,7 +16,7 @@ if lsof -t -i:4173 &>/dev/null; then
 fi
 
 # 后台启动
-cd "$SCRIPT_DIR"
+cd "$PROJECT_DIR/daily-football-predictor"
 nohup npm run serve > "$LOG_FILE" 2>&1 &
 PID=$!
 
@@ -27,5 +28,6 @@ if kill -0 $PID 2>/dev/null; then
   echo "[serve] 访问: http://$(hostname -I | awk '{print $1}'):4173"
 else
   echo "[serve] 启动失败，查看日志: $LOG_FILE"
+  tail -20 "$LOG_FILE"
   exit 1
 fi
