@@ -6,17 +6,21 @@ export TZ=Asia/Shanghai
 cd /app
 
 echo "[start] $(date) 首次运行完整周期..."
-bash intel-service/run-cycle.sh
-RET=$?
-if [ "$RET" -ne 0 ]; then
-  echo "[start] 情报服务异常退出码 $RET,继续启动 cron"
+
+# 运行情报服务（失败不阻断主项目）
+if bash intel-service/run-cycle.sh; then
+  echo "[cycle] 情报服务成功"
+else
+  echo "[cycle] 情报服务失败,继续执行主项目"
 fi
 
-echo "[start] $(date) 启动 cron(每 ${CRON_INTERVAL_MIN:-30} 分钟)"
-crontab deploy/cron.d/cron
+echo "[start] $(date) 启动 cron..."
+crontab deploy/cron.d/cron || echo "[warn] crontab 失败,尝试手动运行"
 
-tail -f /var/log/cron/cron.log 2>/dev/null &
-CRON_LOG_PID=$!
-trap 'kill $CRON_LOG_PID 2>/dev/null; exit 0' INT TERM EXIT
+# 后台日志跟踪
+tail -f /var/log/cron/cron.log /app/logs/cycle.log 2>/dev/null &
+LOG_PID=$!
+trap 'kill $LOG_PID 2>/dev/null; exit 0' INT TERM EXIT
 
-exec cron -f
+# 前台运行 cron
+exec cron -f -l 2
