@@ -12,17 +12,20 @@ services:
     ports:
       - "4173:4173"
     volumes:
-      # 持久化主项目数据(预测/历史/Elo/校准),不随容器重建丢失
       - ./data:/app/daily-football-predictor/data
       - ./logs:/app/logs
     env_file:
       - ./intel-service/.env
     environment:
-      # 若 env_file 已配置,PREDICTIONS_PATH/ADJUSTMENTS_PATH 由 config.py 自动指向容器内路径
       - PREDICTIONS_PATH=/app/daily-football-predictor/data/predictions.json
       - ADJUSTMENTS_PATH=/app/daily-football-predictor/data/adjustments.json
+      - TZ=Asia/Shanghai
+    # 如果服务器在国外，取消下面注释并填入代理地址
+    # http_proxy: http://你的代理地址:端口
+    # https_proxy: http://你的代理地址:端口
+    # no_proxy: localhost,127.0.0.1
     healthcheck:
-      test: ["CMD", "bash", "-c", "grep -q daily-football-predictor /proc/1/cgroup 2>/dev/null || true; curl -sf http://127.0.0.1:4173/ -o /dev/null || exit 1"]
+      test: ["CMD", "curl", "-sf", "http://127.0.0.1:4173/", "-o", "/dev/null"]
       interval: 5m
       timeout: 5s
       retries: 2
