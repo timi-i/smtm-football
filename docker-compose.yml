@@ -1,25 +1,22 @@
 version: "3.9"
 
 services:
-  football-predictor:
+  intel-service:
     build:
       context: .
-      args:
-        VERSION: "${BUILD_VERSION:-local}"
-    image: smtm-football:latest
-    container_name: smtm-football
+      dockerfile: Dockerfile
+    image: smtm-intel:latest
+    container_name: smtm-intel
     restart: unless-stopped
-    ports:
-      - "4173:4173"
     volumes:
       - ./data:/app/daily-football-predictor/data
       - ./logs:/app/logs
     env_file:
       - ./intel-service/.env
     environment:
+      - TZ=Asia/Shanghai
       - PREDICTIONS_PATH=/app/daily-football-predictor/data/predictions.json
       - ADJUSTMENTS_PATH=/app/daily-football-predictor/data/adjustments.json
-      - TZ=Asia/Shanghai
     healthcheck:
       test: ["CMD", "curl", "-sf", "http://127.0.0.1:4173/", "-o", "/dev/null"]
       interval: 5m
