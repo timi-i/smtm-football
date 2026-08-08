@@ -20,11 +20,6 @@ services:
       - PREDICTIONS_PATH=/app/daily-football-predictor/data/predictions.json
       - ADJUSTMENTS_PATH=/app/daily-football-predictor/data/adjustments.json
       - TZ=Asia/Shanghai
-      # 香港服务器访问中国网站需要代理
-      # 请根据实际情况修改代理地址和端口
-      - http_proxy=http://127.0.0.1:7890
-      - https_proxy=http://127.0.0.1:7890
-      - no_proxy=localhost,127.0.0.1
     healthcheck:
       test: ["CMD", "curl", "-sf", "http://127.0.0.1:4173/", "-o", "/dev/null"]
       interval: 5m
