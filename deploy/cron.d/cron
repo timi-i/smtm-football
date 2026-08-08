@@ -1,0 +1,2 @@
+# 每 30 分钟跑一次完整周期(情报 + 主项目)
+*/30 * * * * cd /app && bash intel-service/run-cycle.sh >> /app/logs/cycle.log 2>&1

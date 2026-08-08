@@ -1,0 +1,29 @@
+version: "3.9"
+
+services:
+  football-predictor:
+    build:
+      context: .
+      args:
+        VERSION: "${BUILD_VERSION:-local}"
+    image: smtm-football:latest
+    container_name: smtm-football
+    restart: unless-stopped
+    ports:
+      - "4173:4173"
+    volumes:
+      # 持久化主项目数据(预测/历史/Elo/校准),不随容器重建丢失
+      - ./data:/app/daily-football-predictor/data
+      - ./logs:/app/logs
+    env_file:
+      - ./intel-service/.env
+    environment:
+      # 若 env_file 已配置,PREDICTIONS_PATH/ADJUSTMENTS_PATH 由 config.py 自动指向容器内路径
+      - PREDICTIONS_PATH=/app/daily-football-predictor/data/predictions.json
+      - ADJUSTMENTS_PATH=/app/daily-football-predictor/data/adjustments.json
+    healthcheck:
+      test: ["CMD", "bash", "-c", "grep -q daily-football-predictor /proc/1/cgroup 2>/dev/null || true; curl -sf http://127.0.0.1:4173/ -o /dev/null || exit 1"]
+      interval: 5m
+      timeout: 5s
+      retries: 2
+      start_period: 10s
