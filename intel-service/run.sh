@@ -8,6 +8,9 @@ set -euo pipefail
 DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 cd "$DIR"
 
+# 设置时区
+export TZ=Asia/Shanghai
+
 if [ ! -f .env ]; then
   if [ -f .env.example ]; then
     echo "[intel] 未找到 .env,复制 .env.example 作为模板"
@@ -18,8 +21,12 @@ fi
 
 # 默认指向主项目数据目录
 if [ ! -f .env ] || ! grep -q "PREDICTIONS_PATH" .env; then
-  PREDICTIONS_PATH="${PREDICTIONS_PATH:-$(dirname "$DIR")/daily-football-predictor/data/predictions.json}"
-  ADJUSTMENTS_PATH="${ADJUSTMENTS_PATH:-$(dirname "$DIR")/daily-football-predictor/data/adjustments.json}"
+  PREDICTIONS_PATH="${PREDICTIONS_PATH:-/app/daily-football-predictor/data/predictions.json}"
+  ADJUSTMENTS_PATH="${ADJUSTMENTS_PATH:-/app/daily-football-predictor/data/adjustments.json}"
 fi
 
-exec "$DIR/.venv/bin/python" main.py "$@"
+export PREDICTIONS_PATH
+export ADJUSTMENTS_PATH
+
+# 使用系统 Python 虚拟环境
+exec /opt/venv/bin/python main.py "$@"

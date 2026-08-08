@@ -2,6 +2,7 @@
 # 容器启动脚本:先跑一次完整周期(cron 在后台持续),然后守护 cron
 set -euo pipefail
 
+export TZ=Asia/Shanghai
 cd /app
 
 echo "[start] $(date) 首次运行完整周期..."

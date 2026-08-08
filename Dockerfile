@@ -36,20 +36,26 @@ LABEL org.opencontainers.image.source="https://github.com/timi-i/smtm-football" 
 
 WORKDIR /app
 
-RUN apt-get update -qq \
-    && apt-get install -y --no-install-recommends cron ca-certificates curl \
+# 设置时区为 Asia/Shanghai
+ENV TZ=Asia/Shanghai
+RUN ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone \
+    && apt-get update -qq \
+    && apt-get install -y --no-install-recommends tzdata cron ca-certificates curl \
     && rm -rf /var/lib/apt/lists/* \
     && groupadd -r app && useradd -r -g app app
 
-COPY --from=intel-builder --chown=app:app /opt/venv /opt/venv
+# 复制 Python 虚拟环境
+COPY --from=intel-builder /opt/venv /opt/venv
 COPY --from=intel-builder --chown=app:app /app/intel-service /app/intel-service
 
+# 复制 Node.js 依赖（主项目无 npm 依赖，只有源码）
 COPY --from=main-builder --chown=app:app /app/daily-football-predictor /app/daily-football-predictor
 COPY deploy/cron.d /app/deploy/cron.d
 COPY deploy/start.sh /app/deploy/start.sh
 
 RUN chmod 755 /app/deploy/start.sh \
-    && mkdir -p /app/logs /var/log/cron && chown app:app /app/logs
+    && mkdir -p /app/logs /var/log/cron \
+    && chown app:app /app/logs
 
 USER app
 
