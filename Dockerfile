@@ -4,7 +4,8 @@ WORKDIR /app
 
 COPY daily-football-predictor/package.json ./daily-football-predictor/package.json
 
-RUN npm --prefix daily-football-predictor ci --no-audit --no-fund
+# 项目无 package-lock.json，用 npm install 而非 npm ci
+RUN npm --prefix daily-football-predictor install --no-audit --no-fund --production=false
 
 COPY daily-football-predictor/ ./daily-football-predictor/
 
