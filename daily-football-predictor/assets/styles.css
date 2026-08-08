@@ -192,3 +192,36 @@ footer p { margin:0; }
   footer { display:block; line-height:1.7; }
   footer p+p { margin-top:8px; }
 }
+
+.odds-display {
+  margin-top: 8px;
+  padding: 8px;
+  background: rgba(200, 247, 95, 0.05);
+  border-radius: 4px;
+  font-size: 12px;
+}
+
+.odds-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin: 3px 0;
+}
+
+.odds-label {
+  width: 70px;
+  color: var(--muted);
+  font-size: 11px;
+}
+
+.odd-item {
+  padding: 2px 8px;
+  border-radius: 3px;
+  font-weight: 600;
+  min-width: 38px;
+  text-align: center;
+}
+
+.odd-item.win { background: rgba(100, 219, 155, 0.2); color: var(--green); }
+.odd-item.draw { background: rgba(255, 193, 7, 0.2); color: #ffc107; }
+.odd-item.lose { background: rgba(255, 118, 109, 0.2); color: var(--red); }
